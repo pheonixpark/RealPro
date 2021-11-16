@@ -3,7 +3,7 @@ from pico2d import *
 import game_framework
 import theWorld
 
-from Mario import mario
+from mario import Mario
 from wall import Wall
 
 name = "MainState"
@@ -22,9 +22,9 @@ def collide(a, b):
     return True
 
 def enter():
-    global Mario
-    Mario = Mario()
-    theWorld.add_object(Mario,1)
+    global mario
+    mario = Mario()
+    theWorld.add_object(mario,1)
 
     global wall
     wall=Wall()
@@ -48,7 +48,7 @@ def handle_events():
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
                 game_framework.quit()
         else:
-            Mario.handle_event(event)
+            mario.handle_event(event)
 
 def update():
     for game_object in theWorld.all_objects():
