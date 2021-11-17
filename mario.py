@@ -98,14 +98,14 @@ class DashState:
 
 class JumpState:
     def enter(mario,event):
-        mario.dir=mario.velocity
+        pass
 
     def exit(mario, event):
         pass
     def do(mario):
         mario.frame = (mario.frame + action_frame * action_time * game_framework.frame_time) % 8
         mario.y+=mario.velocity * game_framework.frame_time *3
-        mario.y=clamp(90,mario.y,150-25)
+        mario.y=clamp(90,mario.y,300)
     def draw(mario):
         if mario.dir >= 1:
             mario.image.clip_draw(int(mario.frame) * 100, 100, 100, 100, mario.x, mario.y)
@@ -117,16 +117,18 @@ next_state = {
     IdleState: {R_up:RunState, R_down:RunState, L_up:RunState, L_down:RunState,
                 S_up:IdleState,S_down:IdleState,Z_up:IdleState,Z_down:IdleState},
     RunState: {R_up:IdleState, R_down:IdleState, L_up:IdleState, L_down:IdleState,S_down:DashState,S_up:RunState,
-               Z_up:JumpState, Z_down:RunState},
+               Z_up:RunState, Z_down:JumpState},
     DashState:{R_up:IdleState, R_down:IdleState, L_up:IdleState, L_down:IdleState,S_up:RunState},
     JumpState:{R_up:IdleState, R_down:IdleState, L_up:IdleState, L_down:IdleState,Z_up:IdleState}
 }
 class Mario:
     def __init__(self):
-        self.x, self.y = 1600//2 , 90
+        self.x, self.y = 1600//2 , 300
+        self.fallspeed=269
         self.image=load_image('animation_sheet.png')
         self.dir=1
         self.velocity=0
+        self.jump=50
         self.frame=0
         self.jump=1
         self.event_que=[]
@@ -134,7 +136,7 @@ class Mario:
         self.cur_state.enter(self,None)
 
     def get_bb(self):
-        return self.x-50, self.y-50, self.x+50, self.y+50
+        return self.x-30, self.y-50, self.x+30, self.y+50
 
     def add_event(self, event):
         self.event_que.insert(0, event)
@@ -146,6 +148,7 @@ class Mario:
             self.cur_state.exit(self, event)
             self.cur_state = next_state[self.cur_state][event]
             self.cur_state.enter(self, event)
+        self.y-=self.fallspeed*game_framework.frame_time
 
     def draw(self):
         self.cur_state.draw(self)
@@ -155,4 +158,6 @@ class Mario:
          if (event.type, event.key) in key_event_table:
             key_event = key_event_table[(event.type, event.key)]
             self.add_event(key_event)
+    def stop(self):
+        self.fallspeed=0
 

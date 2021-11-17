@@ -87,11 +87,11 @@ import time
 
 frame_time = 0.0
 
-def run(start_state):
+def run(Logo_state):
     global running, stack
     running = True
-    stack = [start_state]
-    start_state.enter()
+    stack = [Logo_state]
+    Logo_state.enter()
 
     global frame_time
     current_time = time.time()
@@ -111,8 +111,8 @@ def run(start_state):
 
 
 def test_game_framework():
-    start_state = TestGameState('StartState')
-    run(start_state)
+    Logo_state = TestGameState('StartState')
+    run(Logo_state)
 
 
 

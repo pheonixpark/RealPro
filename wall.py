@@ -7,13 +7,13 @@ class Wall:
     def update(self):
         pass
 
+    def get_bb(self):
+        return 0,0,1600-1,50
+
     def draw(self):
         self.image.draw(400, 30)
         self.image.draw(1200, 30)
         draw_rectangle(*self.get_bb())
 
-        def get_bb(self):
-            return 0, 0, 1600 - 1, 50
-    def get_bb(self):
-        return 0,0,0,0
+
 
