@@ -1,5 +1,6 @@
 from pico2d import *
 import game_framework
+import server
 import theWorld
 
 history=[]
@@ -37,6 +38,7 @@ class IdleState:
             mario.velocity -= RUN_SPEED_PPS
         elif event == L_up:
             mario.velocity += RUN_SPEED_PPS
+        mario.timer=50
 
 
     def exit(mario, event):
@@ -67,11 +69,13 @@ class RunState:
         pass
 
     def do(mario):
+
         mario.frame = (mario.frame+action_frame*action_time*game_framework.frame_time) % 8
         mario.x += mario.velocity* game_framework.frame_time
-        mario.x =clamp(25, mario.x,1600-25)
+
 
     def draw(mario):
+        cx, cy= mario.x-server.background.window_left, mario.y-server.background.window_bottom
         if mario.dir ==1:
             mario.image.clip_draw(int(mario.frame) * 100, 100, 100, 100, mario.x, mario.y)
         else:
@@ -88,7 +92,7 @@ class DashState:
     def do(mario):
         mario.frame = (mario.frame + action_frame * action_time * game_framework.frame_time) % 8
         mario.x += mario.velocity * game_framework.frame_time *3
-        mario.x =clamp(25, mario.x,1600-25)
+
 
     def draw(mario):
         if mario.dir >= 1:
@@ -98,14 +102,17 @@ class DashState:
 
 class JumpState:
     def enter(mario,event):
+        mario.timer=5
         pass
 
     def exit(mario, event):
         pass
     def do(mario):
         mario.frame = (mario.frame + action_frame * action_time * game_framework.frame_time) % 8
-        mario.y+=mario.velocity * game_framework.frame_time *3
-        mario.y=clamp(90,mario.y,300)
+        mario.y+=5* game_framework.frame_time
+        mario.timer -= 1
+        if mario.timer==0:
+            mario.y-=5* game_framework.frame_time
     def draw(mario):
         if mario.dir >= 1:
             mario.image.clip_draw(int(mario.frame) * 100, 100, 100, 100, mario.x, mario.y)
@@ -119,17 +126,18 @@ next_state = {
     RunState: {R_up:IdleState, R_down:IdleState, L_up:IdleState, L_down:IdleState,S_down:DashState,S_up:RunState,
                Z_up:RunState, Z_down:JumpState},
     DashState:{R_up:IdleState, R_down:IdleState, L_up:IdleState, L_down:IdleState,S_up:RunState},
-    JumpState:{R_up:IdleState, R_down:IdleState, L_up:IdleState, L_down:IdleState,Z_up:IdleState}
+    JumpState:{R_up:IdleState, R_down:IdleState, L_up:IdleState, L_down:IdleState,Z_up:RunState}
 }
 class Mario:
     def __init__(self):
-        self.x, self.y = 1600//2 , 300
-        self.fallspeed=269
+        self.x, self.y = 200 , 160
         self.image=load_image('animation_sheet.png')
+        self.fallspeed = 269
         self.dir=1
         self.velocity=0
         self.jump=50
         self.frame=0
+
         self.jump=1
         self.event_que=[]
         self.cur_state = IdleState
@@ -148,7 +156,9 @@ class Mario:
             self.cur_state.exit(self, event)
             self.cur_state = next_state[self.cur_state][event]
             self.cur_state.enter(self, event)
-        self.y-=self.fallspeed*game_framework.frame_time
+        self.y -= self.fallspeed * game_framework.frame_time
+        self.x = clamp(0, self.x, server.background.w - 1)
+        self.y = clamp(0, self.y, server.background.h - 1)
 
     def draw(self):
         self.cur_state.draw(self)

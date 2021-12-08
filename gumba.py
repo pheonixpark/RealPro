@@ -3,7 +3,7 @@ import random
 
 class Gumba:
     def __init__(self):
-        self.x, self.y=random.randint(0,1600-1),70
+        self.x, self.y=random.randint(0,1600-1),80
         self.image = load_image('Gumba.png')
         speed=[-2,2]
         self.velocity=random.choice(speed)

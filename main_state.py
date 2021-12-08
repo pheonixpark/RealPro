@@ -1,5 +1,6 @@
 
 from pico2d import *
+import json
 import game_framework
 import theWorld
 import title_state
@@ -9,15 +10,13 @@ from wall import Wall
 from gumba import Gumba
 from coin import Coin
 from back1 import Back1
+from brick import Brick
 from turtleman import Turtleman
+from backg import Map1 as Background
 name = "MainState"
 
-mario1=None
-wall=None
-Ungm=[]
+import server
 
-gumbas=[]
-coins=[]
 def collide(a, b):
     left_a, bottom_a, right_a, top_a= a.get_bb()
     left_b, bottom_b, right_b, top_b=b.get_bb()
@@ -28,38 +27,31 @@ def collide(a, b):
 
     return True
 
-def gameover(a,b):
-    left_a, bottom_a, right_a, top_a = a.get_bb()
-    left_b, bottom_b, right_b, top_b = b.get_bb()
-    if top_a<bottom_b:return False
-    if bottom_a>top_b:return False
-    if left_a>right_b:return False
-    if right_a<left_b:return False
-
-    return True
 
 
 def enter():
-    global mario1
-    mario1 = Mario()
-    theWorld.add_object(mario1,1)
+    server.mario1 = Mario()
+    theWorld.add_object(server.mario1,1)
+
+    server.wall = Wall()
+    theWorld.add_object(server.wall, 0)
 
 
-    global back1
-    back1=Back1()
-    theWorld.add_object(back1,0)
-
-    global wall
-    wall = Wall()
-    theWorld.add_object(wall, 0)
-    global gumbas
     #gumbas=Gumba()
     gumbas = [Gumba() for i in range(5)]
-    theWorld.add_objects(gumbas,1)
+    theWorld.add_objects(gumbas, 1)
 
-    global coins
-    coins=[Coin() for i in range(10)]
-    theWorld.add_objects(coins,1)
+
+    server.background=Background()
+    theWorld.add_object(server.background,0)
+
+    """with open('coin_data.json.py') as f:
+        coin_data_list=json.load(f)
+    for data in coin_data_list:
+        server.coins=Coin(data['no'],data['x'],data['y'])
+        theWorld.add_object(server.coins,1)"""
+
+
 
     """global Ungm
     Ungm=[Turtleman() for i in range(3)]
@@ -83,21 +75,19 @@ def handle_events():
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
                 game_framework.change_state(title_state)
         else:
-            mario1.handle_event(event)
+            server.mario1.handle_event(event)
 
 def update():
     for game_object in theWorld.all_objects():
         game_object.update()
-    for coin in coins:
-        if collide(mario1,coin):
-            coins.remove(coin)
+    for coin in server.coins:
+        if collide(server.mario1,coin):
+            server.coins.remove(coin)
             theWorld.remove_object(coin)
-    if collide(wall,mario1):
-        mario1.stop()
-    for gumba in gumbas:
-        if gameover(gumba,mario1):
-            theWorld.remove_object(mario1)
 
+
+    if collide(server.wall,server.mario1):
+        server.mario1.stop()
 
 
 
